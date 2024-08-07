@@ -6,7 +6,7 @@ filenames <- list()
 # Define the parameters
 eps <- 0:5
 timesteps <- c("1", "01", "001", "0001")
-reps <- 1
+reps <- 500
 
 # Generate the filenames
 for (ep in eps) {
