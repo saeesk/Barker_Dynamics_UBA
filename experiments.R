@@ -95,11 +95,11 @@ save_comparison_plots <- function(eps = 4, dt = 0.0001, reps = 1, n = 1e5) {
        type = "l", ylim = c(0, range(truth)[2] + 0.35))
   if(any(is.na(Barker))== FALSE)
   {
-    lines(density(store_Barker[1,]), col = 'red')
+    lines(density(Barker), col = 'red')
   }
   if(any(is.na(EM))== FALSE)
   {
-    lines(density(store_EM[1,]), col = 'blue')
+    lines(density(EM), col = 'blue')
   }
   
   legend('topright', legend = c('Truth',"UBA", "ULA"), 
