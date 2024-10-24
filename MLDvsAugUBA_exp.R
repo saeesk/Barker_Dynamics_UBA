@@ -69,11 +69,11 @@ Aug_UBA= function(x0,dt,N)
 ###################
 ### Experiments
 ###################
-pdf('MLDvsUBA2.pdf', width = 10 , height = 10)
-timesteps = c(1e-2,1e-3,1e-6)
-steps = c(1e3,1e5,5e6) 
+# pdf('MLDvsUBA2.pdf', width = 10 , height = 10)
+timesteps = c(1e-2,1e-3, 1e-4, 1e-6)
+steps = c(1e5) 
 lambda = 10
-par(mfrow = c(3,3))
+par(mfrow = c(4,3))
 
 
 for( dt in timesteps) {
@@ -99,9 +99,13 @@ for( dt in timesteps) {
     lines(density(r2), col = 'blue')
     legend('topright' , legend = c('AugUBA','MLD', 'Truth') , col = c('red' ,'blue', 'black'), lty = 1)
 
-    
+    acf(r2, col = "blue", lag.max = 100)
+    lines(acf(r1, plot = FALSE, lag.max = 100)$acf, col = "red")
+
+    plot.ts(r1, col = "red")
+    lines(r2, col = "blue")
   }
 }
-dev.off()
+#dev.off()
 
 
