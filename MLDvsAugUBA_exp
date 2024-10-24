@@ -75,8 +75,10 @@ steps = c(1e3,1e5,5e6)
 lambda = 10
 par(mfrow = c(3,3))
 
-sapply(timesteps , function(dt){
-  sapply(steps , function(N){
+
+for( dt in timesteps) {
+   for ( N in steps)
+   {
     ##Logs
     print(paste('Timestep : ' , dt , ', N : ',N))
    
@@ -90,16 +92,16 @@ sapply(timesteps , function(dt){
     
     ##Plots
     vec = seq(0,max(r1),by = 0.01)
-    plot(density(r1), 
+    plot(density(r1),
          col = 'red' , ylim = c(0 , lambda+2),
          main = paste('dt= ' , dt , ' N= ', N ,'r =' , ratio))
     lines(vec , dexp(vec,rate = lambda))
     lines(density(r2), col = 'blue')
     legend('topright' , legend = c('AugUBA','MLD', 'Truth') , col = c('red' ,'blue', 'black'), lty = 1)
+
     
-    
-  })
-})
+  }
+}
 dev.off()
 
 
