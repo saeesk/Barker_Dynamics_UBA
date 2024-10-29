@@ -1,9 +1,9 @@
-set.seed(123)
+#set.seed(123)
 ####################
 ###Data Generation
 #################### 
 library(mvtnorm)
-N = 1e4
+N = 1e3
 K= 5
 h = 1
 
@@ -20,25 +20,24 @@ data = cbind(Y,X)
 ##Posterior density calculated at u
 f = function(u)
 {
-  g = Y*log(p)+(1-Y)*log(1-p)
-  g1 = exp(sum(g))
-  g2 = exp(-u%*%t(u)/2)
-  return(g1*g2)
+  g1 = sum(Y*log(p)+(1-Y)*log(1-p))
+  g2 = -u%*%t(u)/2
+  return(g1+g2)
 }
 
 ## Kernel density calculated at y given x 
 Q = function(y,x)
 {
-  rtn = dmvnorm( y, mean = (x - h*x/2) , sigma = diag(K))
+  rtn = dmvnorm( y, mean = (x - h*x/2) , sigma = diag(K), log = TRUE)
   return(rtn)
 }
 
 ratio = function(x,y)
 {
-  num = f(y)*Q(y,x)
-  den = f(x)*Q(x,y)
-  r = min( 1, num/den)
-  return(r)
+  num = f(y)+Q(y,x)
+  den = f(x)+Q(x,y)
+  logr = min( 0, num-den)
+  return(logr)
 }
 
 MALA = function(x0,n)
@@ -50,10 +49,8 @@ MALA = function(x0,n)
     y = rmvnorm(n=1 , mean = (x[i, ] - h*x[i, ]/2) , sigma = diag(K))
     U = runif(1) 
     v = as.matrix(x[i,], nrow = 1 , ncol =5)
-    num = f(y)*Q(y,v)
-    den = f(t(v))*Q(t(v),y)
-    alpha = min(1, num/den)
-    x[i+1,] = ifelse(U<alpha , y , x[i, ])
+    alpha = ratio(t(v),y)
+    x[i+1,] = ifelse( log(U)<alpha , y , x[i, ])
   }
   return(x)
 }
