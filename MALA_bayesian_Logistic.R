@@ -3,11 +3,11 @@ set.seed(123)
 ###Data Generation
 #################### 
 library(mvtnorm)
-N = 1e3
-K= 7
+N = 1e4
+K= 5
 h = 1
 
-X = matrix(rnorm(n = N*K, mean = 1.5, sd = 1), nrow =N , ncol = K)
+X = matrix(rnorm(n = N*K, mean = 0, sd = 3), nrow =N , ncol = K)
 beta = rmvnorm(n = 1 , mean = rep(0,K))
 p = 1/(1 + exp(-X%*% t(beta)))
 Y = rbinom(n =N , size = 1,p )
@@ -20,7 +20,8 @@ data = cbind(Y,X)
 ##Posterior density calculated at u
 f = function(u)
 {
-  g1 = prod((p^Y)*((1-p)^(1-Y)))
+  g = Y*log(p)+(1-Y)*log(1-p)
+  g1 = exp(sum(g))
   g2 = exp(-u%*%t(u)/2)
   return(g1*g2)
 }
@@ -57,9 +58,10 @@ MALA = function(x0,n)
   return(x)
 }
 Sys.time()
-beta_pst = MALA(beta, 1e4)
+beta_pst = MALA(beta, 1e5)
 colMeans(beta_pst)
 beta
 Sys.time()
+
 
 
