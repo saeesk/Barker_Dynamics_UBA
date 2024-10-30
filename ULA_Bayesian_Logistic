@@ -1,0 +1,40 @@
+###################
+##Data Generation
+##################
+library(mvtnorm)
+n = 1e3
+k= 5
+h = 1
+
+X = matrix(rnorm(n*K, mean = 0, sd = 3), nrow =n , ncol = k)
+betastar = matrix(rmvnorm(n = 1 , mean = rep(0,k)), nrow = k , ncol =1 )
+p = 1/(1 + exp(- X%*% betastar))
+Y = matrix(rbinom(n , size = 1,p ), nrow = 1000, ncol = 1)
+
+data = cbind(Y,X)
+#####################
+###ULA Updates
+#####################
+grad_log_f = function(beta)
+{
+  
+  den = 1 + exp(- X %*% beta)
+  num = Y %*% t(X)%*% exp( - X%*% beta) - (1-Y)%*%X
+  rtn = -beta + colSums(num/den)
+  return(rtn)
+}
+
+ULA_BL = function(b0, dt,N)
+{
+  beta = matrix(1 ,nrow = N, ncol = k)
+  beta[1, ] = b0 
+  for(i in 1:(N-1))
+  {
+    nu = rmvnorm(1, mean = rep(0,k))
+    gradU = grad_log_f(beta[i, ])
+    beta[(i+1), ] = beta[i ,] - dt* gradU + sqrt(2*dt)*nu
+  }
+  return(beta)
+}
+
+ULA_BL(betastar, 0.001,1e3)
