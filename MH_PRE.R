@@ -69,7 +69,7 @@ MH = function(x0,n)
 }
 Sys.time()
 temp = c(lambdastar,eta)
-lamba_pst = MALA(temp, 1e4)[ ,1]
+lamba_pst = MH(temp, 1e4)[ ,1]
 plot(density(lamba_pst))
 Sys.time()
 
