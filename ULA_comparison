@@ -1,0 +1,85 @@
+set.seed(123)
+####################
+###Utilis functions
+####################
+## Euler-Maruyama Numerical Scheme for SDE 
+## Calculate the scaling constant for pdf 
+calcz = function(eps) {
+  x = rexp(1e5)
+  Y = x - (x^(2+eps))/(2+eps)
+  avg = mean(exp(Y))
+  z = 2 * avg
+  return(z)
+}
+## Calculate the pdf 
+pif = function(t , eps) {
+  z = calcz(eps)
+  num = abs(t)^(2+eps)
+  denom = 2 + eps
+  power = exp(-num/denom)
+  return(power/z)
+}
+
+## Calculate drift function 
+drift = function(t, eps){
+  absdrift = -abs(t)^(1 + eps)
+  dir = sign(t)
+  return(dir*absdrift)
+}
+##Calculate the probability function for jumps 
+#################
+###To functions
+##################
+##Euler Maruyama to get solution paths 
+Euler_Maruyama = function(x0, eps, sigma,N ,dt)
+{
+  x = numeric(N)
+  x[1] = x0
+  sqrt_dt_sigma = sigma * sqrt(dt)
+  for( i in 2:N)
+  {
+    mu = drift(x[i-1],eps)
+    x[i] =  x[i-1]+ dt*mu+  sqrt_dt_sigma*rnorm(1)
+  }
+  return(x)
+}
+
+#eps0 = Euler_Maruyama(0, eps = 0,sqrt(2),1e3, 1e-2)
+#eps4 = Euler_Maruyama(0, eps = 4,sqrt(2),1e3, 1e-2)
+# eps8 = Euler_Maruyama(0, eps = 8,sqrt(2),1e3, 1e-2) 
+# pdf('tsplots.pdf')
+# ts.plot(eps0 , ylim = c(-1.8,1.8), ylab = 'X', xlab = 'n')
+# lines(1:1e3, eps4, col = 'blue')
+# lines(1:1e3, eps8, col = 'red')
+# legend('topright', legend = c('0','4','8'), lty = 1 , 
+#        col = c('black', 'blue', 'red'), title = expression(epsilon))
+# dev.off()
+
+######################################
+####### ULA needs to breakdown 
+######################################
+pdf('comparison_ULA.pdf')
+par(mfrow = c(3,2))
+vec = c(0,4,6)
+for(epsilon in vec)
+{
+  EM <- Euler_Maruyama(x0 = 0, eps = epsilon, sigma = sqrt(2), dt = 0.1, N = 1e3)   
+  
+  ## Generate the sequence and equilibrium distribution
+  v <- seq(-3, 3, length.out = 100)
+  truth <- pif(t = v, eps = epsilon)
+  
+  ## Create the plot
+  plot(v, truth, col = 'black', main = paste('eps =', epsilon, "dt=", 1e-2),
+       type = "l", xlab = 'x' , cex.main = 1.5)
+  
+  lines(density(EM), col = 'blue')
+ 
+  legend('topright', legend = c('Truth',"ULA"), col = c('black','blue'), lty = 1)
+  
+  ts.plot(EM , ylim = c(-1.8,1.8), ylab = 'X', xlab = 'n', col = epsilon+1)
+  
+}
+dev.off()
+
+
