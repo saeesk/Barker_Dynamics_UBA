@@ -7,7 +7,7 @@
 ###################################
 projection  = function(u)
 {
-  if(all(u[1] < 0, na.rm = TRUE) && all(u[2] < 0, na.rm = TRUE))
+  if(all(u[1] < 0, na.rm = TRUE) && all(u[2] < 0, na.rm = TRUE))  ##This could be wrong! 
   {
     return(c(0,0))
   }
@@ -109,8 +109,7 @@ AugUBA2d = function(x0,dt,N)
       # #Calculate the unit sized jump along the arrow
       m = (c0[2] - x2)/(x1 - c0[1])
       jump =  c(1/sqrt(1 + m^2), m/(1+ sqrt(m^2)))
-      #ahead = out[(i-1) , ]+ jump
-      #back =  out[(i-1) , ]- jump
+      
       
       b = ifelse(U<= prob , jump, -jump)
     }
