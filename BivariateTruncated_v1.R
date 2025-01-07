@@ -9,12 +9,10 @@ projection  = function(u)
   if(all(u[1] < 0, na.rm = TRUE) && all(u[2] < 0, na.rm = TRUE))
   {
     return(c(0,0))
-  }
-  else if (u[1]>0 & u[2]<0)
+  } else if (u[1]>0 & u[2]<0)
   {
     return(c(u[1],0))
-  }
-  else
+  } else
   {
     return(c(0,u[2]))
   }
@@ -34,7 +32,7 @@ arrow = function(u,c0,z)
   b = c0[2]
   
   z1 = x + z*(x - a)
-  z2 = y + z*(b - y)
+  z2 = y + z*(y - b)
   return(c(z1,z2))
 }
 
@@ -50,13 +48,13 @@ aug_drift= function(x)
   x1 = x[1]
   x2 = x[2]
   
-  if( x1>0 & x2>0)
+  if( x1>0 && x2>0)
   {
     return(-x)
   }
   else
   {
-    return(c(Inf, Inf))
+    return(c(-Inf, -Inf))
   }
 }
 
@@ -102,8 +100,8 @@ AugUBA2d = function(x0,dt,N)
       z = rnorm(1)
       prob = p(out[(i-1), ], dt = dt , v= rep(z,2) )
        
-      c0 = projection(out[(i-1),]) #find projection
-      v = arrow(out[(i-1),], c0,z) #shoot the arrow
+      c0 = projection(out[(i-1), ]) #find projection
+      v = arrow(out[(i-1), ], c0,z) #shoot the arrow
       
       # #Calculate the unit sized jump along the arrow
       m = (c0[2] - x2)/(x1 - c0[1])
@@ -124,11 +122,11 @@ AugUBA2d = function(x0,dt,N)
 }
 
 ### Example 
-foo =AugUBA2d(c(-0.1,0.1) , dt = 1e-3, N = 1e4) 
-df = data.frame(foo)
+foo =AugUBA2d(x0 = c(0.1,0.1) , dt = 1e-3, N = 1e3) 
+(df = data.frame(foo))
 df.clean = df[df$X1 > 0 & df$X2 > 0, ]
 correct= nrow(df.clean)
 ratio = 1 - (correct/1e4)
 plot(df.clean , main = ratio)
-ts.plot(df.clean$X1)
+plot.ts(df.clean$X1)
 ts.plot(df.clean$X2)
