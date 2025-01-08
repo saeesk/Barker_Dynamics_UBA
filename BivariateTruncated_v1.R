@@ -65,9 +65,9 @@ aug_drift= function(x)
 #######################
 p = function(x,dt,v)
 {
- mu = aug_drift(x) 
- temp = sqrt(pi*dt)*v*mu
- return(pnorm(temp/2)) 
+  mu = aug_drift(x) 
+  temp = sqrt(pi*dt)*v*mu
+  return(pnorm(temp/2)) 
 }
 
 #p(c(2,-3), 1e-2,z)
@@ -79,7 +79,9 @@ AugUBA2d = function(x0,dt,N)
 {
   #Initialize
   out = matrix(0 , nrow = N , ncol = 2)
+  step = matrix(0 , nrow= N , ncol = 2)
   out[1, ] = x0
+  step[1, ] = 0
   for( i in 2:N)
   {
     x1=out[(i-1),1]
@@ -99,34 +101,55 @@ AugUBA2d = function(x0,dt,N)
       print('Entering AugUBA')
       z = rnorm(1)
       prob = p(out[(i-1), ], dt = dt , v= rep(z,2) )
-       
+      
       c0 = projection(out[(i-1), ]) #find projection
       v = arrow(out[(i-1), ], c0,z) #shoot the arrow
       
       # #Calculate the unit sized jump along the arrow
-      m = (c0[2] - x2)/(x1 - c0[1])
-      if(m == Inf)
+      m = (x2 - c0[2])/(x1 - c0[1])
+      if(m == Inf || m == -Inf)
       {
         jump = c(0 , 1)
         #print('m is inf!')
-      }else{
+      }else if(m == 0)
+      {
+        jump = c(1 ,0)
+      }
+      else{
         jump =  c(1/sqrt(1 + m^2), m/(1+ sqrt(m^2)))
       }
       
       b = ifelse(U<= prob , jump, -jump)
     }
     out[i , ] = out[(i-1) , ] + sqrt(2*dt)*b*v
+    step[i, ] = sqrt(2*dt)*b*v
+    
     print(i)
-  }
-  return(out)
+  } 
+  
+  rtn = cbind(out, step)
+  return(rtn)
 }
 
 ### Example 
-foo =AugUBA2d(x0 = c(0.1,0.1) , dt = 1e-3, N = 1e3) 
-(df = data.frame(foo))
+ 
+foo_AugUBA = AugUBA2d(x0 = c(-10,-1) , dt = 1e-3, N = 1e3) 
+df = data.frame(foo_AugUBA)
+plot(df$X1 , df$X2)
+plot(1:1e3,df$X3 , type = 'l')
+lines(1:1e3 , df$X1 , col = 'red')
+ts.plot(df$X4)
+abline(h = mean(df$X3), col = 'red')
+abline(h = 0 , col = 'grey')
+
 df.clean = df[df$X1 > 0 & df$X2 > 0, ]
 correct= nrow(df.clean)
-ratio = 1 - (correct/1e4)
-plot(df.clean , main = ratio)
-plot.ts(df.clean$X1)
-ts.plot(df.clean$X2)
+ratio = 1 - (correct/1e3)
+ratio
+plot(df.clean$X1,df.clean$X2 , main = ratio)
+ts.plot(df.clean$X1)
+plot.ts(df.clean$X2)
+#######################
+
+##When in 3rd quadrant works fine - almost reaches the support
+##but does not enter it.
