@@ -80,8 +80,10 @@ AugUBA2d = function(x0,dt,N)
   #Initialize
   out = matrix(0 , nrow = N , ncol = 2)
   step = matrix(0 , nrow= N , ncol = 2)
+  d = numeric(N)
   out[1, ] = x0
   step[1, ] = 0
+  d[1] = 0
   for( i in 2:N)
   {
     x1=out[(i-1),1]
@@ -93,13 +95,13 @@ AugUBA2d = function(x0,dt,N)
     ##If point is inside the support, run UBA
     if(!is.na(x1) && x1 > 0 && !is.na(x2) && x2 > 0){
       print('Entering UBA')
-      v = rnorm(2)
+      v = rnorm(n = 2 , mean = 0, sd = 1)
       prob = p(out[(i-1), ], dt = dt, v = v)
       b = ifelse(U <= prob, 1, -1)
     }else{ 
       ##Point is outside the support, run AugUBA
       print('Entering AugUBA')
-      z = rnorm(1)
+      z = rnorm(n=1 , mean = 0 , sd =1)
       prob = p(out[(i-1), ], dt = dt , v= rep(z,2) )
       
       c0 = projection(out[(i-1), ]) #find projection
@@ -123,33 +125,95 @@ AugUBA2d = function(x0,dt,N)
     }
     out[i , ] = out[(i-1) , ] + sqrt(2*dt)*b*v
     step[i, ] = sqrt(2*dt)*b*v
+    d[i]= 2*dt*sum( (b*v)^2)
     
     print(i)
   } 
   
-  rtn = cbind(out, step)
+  rtn = cbind(out, step , d)
   return(rtn)
 }
 
 ### Example 
- 
-foo_AugUBA = AugUBA2d(x0 = c(-10,-1) , dt = 1e-3, N = 1e3) 
-df = data.frame(foo_AugUBA)
-plot(df$X1 , df$X2)
-plot(1:1e3,df$X3 , type = 'l')
-lines(1:1e3 , df$X1 , col = 'red')
-ts.plot(df$X4)
-abline(h = mean(df$X3), col = 'red')
-abline(h = 0 , col = 'grey')
 
-df.clean = df[df$X1 > 0 & df$X2 > 0, ]
-correct= nrow(df.clean)
-ratio = 1 - (correct/1e3)
-ratio
-plot(df.clean$X1,df.clean$X2 , main = ratio)
-ts.plot(df.clean$X1)
-plot.ts(df.clean$X2)
+foo_AugUBA = AugUBA2d(x0 = c(-1,-1) , dt = 1e-3, N = 1e4) 
+df = data.frame(round(foo_AugUBA,4))
+plot(df$V1 , df$V2 , main = 'Chain Movement')
+##Plotting arrow 
+out =  matrix(0 , nrow = 1000 , ncol = 2)
+a = 0 
+b = 0
+A = c(-1,-1) 
+z = rnorm(1000)
+for( i in 1: 1000)
+{
+  out[i, ] = arrow(A , c(a,b), z[i])
+}
+points(out[ , 1] , out[ ,2], col = 'green')
+points(-1 ,-1 , col = 'blue' , pch = 16)
+points(0,0, col = 'blue', pch = 16)
+legend('bottomright' , legend = c('arrow' , 'chain') , 
+       col = c('green' , 'black') , pch =1)
+
+
+
+plot(df$V3 , df$V4 , main = 'Jumps' )
+out =  matrix(0 , nrow = 1000 , ncol = 2)
+a = 0 
+b = 0
+A = c(-1,-1) 
+z = rnorm(1000)
+for( i in 1: 1000)
+{
+  out[i, ] = arrow(A , c(a,b), z[i])
+}
+points(out[ , 1] , out[ ,2], col = 'green')
+points(-1 ,-1 , col = 'blue' , pch = 16)
+points(0,0, col = 'blue', pch = 16)
+legend('bottomright' , legend = c('arrow' , 'jumps') , 
+       col = c('green' , 'black') , pch =1)
+
+dist = df$d 
+
+plot( 1:150 , dist[1:150] , type = 'o' , main = 'Update Size')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################
+# 
+# plot(df$X3, df$X4 , type = 'l', col = 'red')
+# plot(1:1e3,df$X3 , type = 'l')
+# lines(1:1e3 , df$X1 , col = 'red')
+# plot(1:1e3,df$X4 , type = 'l')
+# lines(1:1e3 , df$X2 , col = 'blue')
+# ts.plot(df$X4)
+# abline(h = mean(df$X3), col = 'red')
+# abline(h = 0 , col = 'grey')
+# 
+# df.clean = df[df$X1 > 0 & df$X2 > 0, ]
+# correct= nrow(df.clean)
+# ratio = 1 - (correct/1e3)
+# ratio
+# plot(df.clean$X1,df.clean$X2 , main = ratio)
+# ts.plot(df.clean$X1)
+# plot.ts(df.clean$X2)
 #######################
 
-##When in 3rd quadrant works fine - almost reaches the support
+##When in 3rd quadrant works fine 
+##almost reaches the support
 ##but does not enter it.
+
+
+
+
