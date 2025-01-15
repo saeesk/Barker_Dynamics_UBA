@@ -87,7 +87,8 @@ AugUBA2d = function(x0,dt,N)
   d[1] = 0
   for( i in 2:N)
   {
-
+    x1 = out[(i-1),1]
+    x2 = out[(i-1),2]
     U = runif(2)
     
     ##If point is inside the support, run UBA
@@ -164,4 +165,5 @@ ggplot(truncated_data, aes(x = x, y = y)) +
        x = "X",
        y = "Y") +
   theme_minimal()
+
 
