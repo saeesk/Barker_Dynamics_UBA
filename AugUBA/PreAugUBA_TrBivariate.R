@@ -93,55 +93,58 @@ PrAugUBA = function(x0, dt, N)
   return(out)
 }
 
-try1 = PrAugUBA(x0 = c(-1,1), dt = 1e-3 , N = 1e4)
-df = as.data.frame(try1)
-df.clean = df[df$V1 > 0 & df$V2 > 0, ]
-correct= nrow(df.clean)
-ratio = 1 - (correct/1e4)
-plot(df.clean,pch = 16, xlab = 'x', ylab = 'y', 
-     main = paste( 'x0 = c(-5,1),ratio= ',ratio ))
-
-
-try2 = PrAugUBA(x0 = c(-1,-1), dt = 1e-3 , N = 1e4)
-df = as.data.frame(try2)
-df.clean = df[df$V1 > 0 & df$V2 > 0, ]
-correct= nrow(df.clean)
-ratio = 1 - (correct/1e4)
-plot(df.clean,pch = 16, xlab = 'x', ylab = 'y', 
-     main = paste( 'x0 = c(-1,-1),ratio= ',ratio ))
-
-try3 = PrAugUBA(x0 = c(1,-1), dt = 1e-3 , N = 1e4)
-df = as.data.frame(try3)
-df.clean = df[df$V1 > 0 & df$V2 > 0, ]
-correct= nrow(df.clean)
-ratio = 1 - (correct/1e4)
-plot(df.clean,pch = 16, xlab = 'x', ylab = 'y', 
-     main = paste( 'x0 = c(1,-1),ratio= ',ratio ))
-
-try4 = PrAugUBA(x0 = c(1,1), dt = 1e-3 , N = 1e4)
-df = as.data.frame(try1)
-df.clean = df[df$V1 > 0 & df$V2 > 0, ]
-correct= nrow(df.clean)
-ratio = 1 - (correct/1e4)
-plot(df.clean,pch = 16, xlab = 'x', ylab = 'y', 
-     main = paste( 'x0 = c(1,1),ratio= ',ratio ))
-
 # Generate random samples
 # For reproducibility
-n_samples <- 100000
+n_samples <- 10000
 data <- rmvnorm(n = n_samples, mean = c(0,0))
 
 # Convert to a data frame and apply truncation
 data_df <- as.data.frame(data)
 colnames(data_df) <- c("x", "y")
 truncated_data <- subset(data_df, x > 0 & y > 0)  # Keep only points in the positive quadrant
+pdf(file="PreAugUBA.pdf")
+par(mfrow = c(2,2))
 
-# Plot the truncated data
-ggplot(truncated_data, aes(x = x, y = y)) +
-  geom_point(alpha = 0.3, color = "blue") +       # Scatterplot
-  labs(title = "Truncated Standard Bivariate Gaussian (Positive Quadrant)",
-       x = "X",
-       y = "Y") +
-  theme_minimal()
+try1 = PrAugUBA(x0 = c(-1,1), dt = 1e-3 , N = 1e4)
+df = as.data.frame(try1)
+df.clean = df[df$V1 > 0 & df$V2 > 0, ]
+correct= nrow(df.clean)
+ratio = 1 - (correct/1e4)
+plot(truncated_data$x, truncated_data$y, col = 'green', xlab = 'x',ylab = 'y',
+     main = paste( 'x0 = c(-1,1), ratio= ',ratio ))
+points(df.clean$V1, df.clean$V2, col = 'blue')
+legend('topright', legend = c('Truth',"PreAugUBA"), col =c('green', 'blue'), pch= 16)
 
+try2 = PrAugUBA(x0 = c(-1,-1), dt = 1e-3 , N = 1e4)
+df = as.data.frame(try2)
+df.clean = df[df$V1 > 0 & df$V2 > 0, ]
+correct= nrow(df.clean)
+ratio = 1 - (correct/1e4)
+plot(truncated_data$x, truncated_data$y, col = 'green', xlab = 'x',ylab = 'y',
+     main = paste( 'x0 = c(-1,-1), ratio= ',ratio ))
+points(df.clean$V1, df.clean$V2, col = 'blue')
+legend('topright', legend = c('Truth',"PreAugUBA"), col =c('green', 'blue'), pch= 16)
+
+
+try3 = PrAugUBA(x0 = c(1,-1), dt = 1e-3 , N = 1e4)
+df = as.data.frame(try3)
+df.clean = df[df$V1 > 0 & df$V2 > 0, ]
+correct= nrow(df.clean)
+ratio = 1 - (correct/1e4)
+plot(truncated_data$x, truncated_data$y, col = 'green', xlab = 'x',ylab = 'y',
+     main = paste( 'x0 = c(1,-1), ratio= ',ratio ))
+points(df.clean$V1, df.clean$V2, col = 'blue')
+legend('topright', legend = c('Truth',"PreAugUBA"), col =c('green', 'blue'), pch= 16)
+
+
+try4 = PrAugUBA(x0 = c(1,1), dt = 1e-3 , N = 1e4)
+df = as.data.frame(try1)
+df.clean = df[df$V1 > 0 & df$V2 > 0, ]
+correct= nrow(df.clean)
+ratio = 1 - (correct/1e4)
+plot(truncated_data$x, truncated_data$y, col = 'green', xlab = 'x',ylab = 'y',
+     main = paste( 'x0 = c(1,1), ratio= ',ratio ))
+points(df.clean$V1, df.clean$V2, col = 'blue')
+legend('topright', legend = c('Truth',"PreAugUBA"), col =c('green', 'blue'), pch= 16)
+dev.off()
 
