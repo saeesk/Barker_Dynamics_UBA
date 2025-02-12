@@ -1,3 +1,4 @@
+set.seed(123)
 library(mvtnorm)
 library(ggplot2)
 ###Augmented drift
