@@ -2,11 +2,12 @@
 set.seed(123)
 
 ##Dimesion of the supprt
-d = 2
+d = 11
 
 #Parameters of Dirichlet Distribution
-nl = rep(1000, d)#c(1e5,10,10,rep(0,8))
-al= rep(1 , d) 
+nl = rep(10,11)
+#nl = c(3,3)
+al= rep(0.1, d) 
 alpha <- al + nl
 #eps = 1e-10
 
@@ -52,8 +53,11 @@ aug_drift = function(x)
   
   u.sub <- u[1:(d-1)]
   x.sub <- x[1:(d-1)]
+  nl.sub <- nl[1:(d-1)]
+  al.sub<- al[1:(d-1)]
   
-  dlogf = (nl+al -1)/x.sub
+  dlogf = (nl.sub + al.sub -1)/x.sub - (nl.sub + al.sub -1)/(1 -sum(x.sub))
+  
   rtn = ifelse( u.sub - x.sub == 0 , dlogf , sign(u.sub - x.sub)*Inf)
   return(rtn)
 }
@@ -132,30 +136,53 @@ aug_UBA = function(x0,dt,N)
 }
 
 x0 = rep(1/d, d)
+#x0 = c(0.5,0.5)
+dt = 1e-4
 N <- 1e4
-try = aug_UBA(x0, dt = .001 , N = N) 
+try = aug_UBA(x0, dt = dt , N = N) 
 c = try[[3]]
 r = 1 - c/N
 r
-plot(try[[2]])
+#plot(try[[2]][1:500], type = 'l')
 
 try1 = try[[1]]
 out = try1[try[[2]] ,]
-
-#plot(out , main = r)
-
-
-# plot(density(out[,1]) , main = paste('X1, r = ',r))
-# plot(density(out[,2]) , main = paste('X2, r = ',r) )
-# print('r')
-# r
+plot(try1, col = try[[2]]+2 ,pch = 16, 
+     xlim = c(0,1.3), ylim = c(-0.15, 1))
+legend("topright", legend = c('Out', 'In'), col = try[[2]]+2, pch = 16 )
+abline(h = 0 , col = 'grey', lty = 2)
+abline(h = 1, col = 'grey', lty =2)
+abline(v = 0 , col = 'grey', lty =2)
+abline(v = 1 , col = 'grey', lty =2)
+abline(a = 1 , b = -1 )
 
 foo.x <- seq(0,1, length = 1e3)
-ind <- 2
-plot(foo.x, dbeta(foo.x, shape1 = alpha[ind], shape2 = sum(alpha) - alpha[ind]), type = 'l')
-lines(density(out[,ind]) , main = paste('X1, r = ',r), col = "red")
+# foo.mat = cbind(foo.x , 1 - foo.x)
+# foo.grad = numeric(1e3)
+# for(i in 1:1e3)
+# {
+#   foo.grad[i] = aug_drift(foo.mat[i,])
+# }
+# 
+# 
+ind <- 4
+plot(foo.x, dbeta(foo.x, shape1 = alpha[ind],
+                  shape2 = sum(alpha) - alpha[ind]),
+     type = 'l', ylab = '', main = paste('dt = ', dt,' N = ', N))
 
-ind <- 100
-plot(try[[1]][1:ind, ], col = try[[2]][1:ind] + 1, pch = 16, xlim = c(0,1), ylim = c(0,1))
+lines(density(out[,ind]) ,
+      main = paste('X1, r = ',round(r)), col = "red")
 
-plot(try[[1]][,1], col = try[[2]]+1, pch = 16)
+#plot(foo.x[-1] , foo.grad[-1], type = 'l',col =2)
+#plot(density(out[,ind]) , main = paste('X1, r = ',r), col = "red")
+#plot(density(foo.grad))
+
+
+
+# ind <- 100
+# plot(try[[1]][1:ind, ], col = try[[2]][1:ind] + 1, pch = 16, xlim = c(0,1), ylim = c(0,1))
+# 
+# plot(try[[1]][1:100,1], col = try[[2]]+2, pch = 16)
+# abline(h = 1)
+# plot(try[[1]][,2], col = try[[2]]+2, pch = 16)
+
