@@ -1,12 +1,14 @@
 ###AugUBA for Simplex
 set.seed(123)
-#Parameters of Dirichlet Distribution
-nl = c(1e5,10,10,rep(0,8))
-al= rep(0.1 , 11) 
-#eps = 1e-10
 
 ##Dimesion of the supprt
-d = 11
+d = 2
+
+#Parameters of Dirichlet Distribution
+nl = rep(1000, d)#c(1e5,10,10,rep(0,8))
+al= rep(1 , d) 
+alpha <- al + nl
+#eps = 1e-10
 
 ##Calculate projection 
 projsplx = function(u)
@@ -47,15 +49,18 @@ projsplx = function(u)
 aug_drift = function(x)
 {
   u = projsplx(x)
-  dlogf = (nl+al -1)/x
-  rtn = ifelse(u-x == 0 , dlogf , sign(u-x)*Inf)
+  
+  u.sub <- u[1:(d-1)]
+  x.sub <- x[1:(d-1)]
+  
+  dlogf = (nl+al -1)/x.sub
+  rtn = ifelse( u.sub - x.sub == 0 , dlogf , sign(u.sub - x.sub)*Inf)
   return(rtn)
 }
 
 ##Calculate probability function 
-probf = function(u , dt, v)
+aug_probf = function(u , dt, v)
 {
-  
   mu = aug_drift(u)
   temp = -sqrt(2*dt)*v*mu
   return(1/(1 + exp(temp)))
@@ -67,7 +72,9 @@ probf = function(u , dt, v)
 C = function(x)
 {
   u = projsplx(x)
-  s = matrix(u-x , nrow = length(u) , ncol = 1)
+  u.sub <- u[1:(d-1)]
+  x.sub <- x[1:(d-1)]
+  s = matrix(u.sub - x.sub , nrow = length(u.sub) , ncol = 1)
   
   #Projection matrix
   den = t(s)%*%s
@@ -78,7 +85,7 @@ C = function(x)
   count = 0
   if(foo>0)
   {
-    I = diag(1,nrow =  d , ncol = d)
+    I = diag(1,nrow =  d-1, ncol = d-1)
     rtn = I
     count = count + 1
   }else{
@@ -92,7 +99,7 @@ C = function(x)
 ###AugUBA
 aug_UBA = function(x0,dt,N)
 {
-  x = matrix(0 ,nrow = N,ncol= d )
+  x = matrix(0 ,nrow = N, ncol= d)
   
   #initializing the first row 
   x[1 , ] = x0
@@ -100,8 +107,8 @@ aug_UBA = function(x0,dt,N)
   counter = 0
   for( i in 2: N)
   {
-    v = rnorm(d)
-    U = runif(d)
+    v = rnorm(d-1)
+    U = runif(d-1)
     prob = aug_probf(u = x[(i-1), ], dt = dt , v = v)
     v = ifelse(U<= prob , v, -v)
     pack = C(x[(i-1), ])
@@ -112,27 +119,43 @@ aug_UBA = function(x0,dt,N)
       counter = counter + 1
       ind[i] = TRUE
     }
-    x[i , ] = x[(i-1) , ] + sqrt(2*dt)*mat%*%v
+    x[i, -d] = x[(i-1), -d] + sqrt(2*dt)*mat%*%v
     x[i , d] = 1 - sum(x[i, -d]) #Using the dirichlet constraint
     #print(sum(x[i,]))
     if(i%% 1e3 ==0)
     {
       print(i)
-      
     }
     
   } 
   return(list(x , ind, counter))
 }
+
 x0 = rep(1/d, d)
-try = aug_UBA(x0, dt = 1e-5 , N = 1e6) 
+N <- 1e4
+try = aug_UBA(x0, dt = .001 , N = N) 
 c = try[[3]]
-r = 1 - c/1e5
+r = 1 - c/N
+r
+plot(try[[2]])
+
 try1 = try[[1]]
 out = try1[try[[2]] ,]
-#plot(out , main = r)
-plot(density(out[,1]) , main = paste('X1, r = ',r))
-plot(density(out[,2]) , main = paste('X2, r = ',r) )
-print('r')
-r
 
+#plot(out , main = r)
+
+
+# plot(density(out[,1]) , main = paste('X1, r = ',r))
+# plot(density(out[,2]) , main = paste('X2, r = ',r) )
+# print('r')
+# r
+
+foo.x <- seq(0,1, length = 1e3)
+ind <- 2
+plot(foo.x, dbeta(foo.x, shape1 = alpha[ind], shape2 = sum(alpha) - alpha[ind]), type = 'l')
+lines(density(out[,ind]) , main = paste('X1, r = ',r), col = "red")
+
+ind <- 100
+plot(try[[1]][1:ind, ], col = try[[2]][1:ind] + 1, pch = 16, xlim = c(0,1), ylim = c(0,1))
+
+plot(try[[1]][,1], col = try[[2]]+1, pch = 16)
