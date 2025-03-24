@@ -18,7 +18,7 @@ grad.w = function(y)
 {
   a0 = sum(pars)
   pars.sub = pars[1:(d-1)]
-  rtn = a0*(exp(y)/(1 + sum(y))) - pars.sub
+  rtn = a0*(exp(y)/(1 + sum(exp(y)))) - pars.sub
   return(rtn)
 }
 
@@ -54,11 +54,11 @@ MLD = function(x0, dt, N)
 
 x0 = rep(1/d, d)
 #x0 = c(0.1,0.9)
-dt = 1e-4
-N <- 1e5
+dt = 1e-3
+N <- 1e6
 try = MLD(x0, dt= dt,N=N)
 ind = 1
 foo.x = seq(0,1, length.out = 1e3)
 plot(foo.x , dbeta(foo.x , shape1 = pars[ind],shape2 = sum(pars) - pars[ind]), type ='l')
-plot(density(try[,ind]), col = 'red')
+lines(density(try[,ind]), col = 'red')
 
