@@ -1,3 +1,7 @@
+##################################################################
+##This is final code for trunacted normal to positive quadrant
+###################################################################
+
 set.seed(123)
 library(mvtnorm)
 library(ggplot2)
