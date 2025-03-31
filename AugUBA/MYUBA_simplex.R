@@ -86,7 +86,7 @@ UBA = function(x0 ,dt, N)
     if(s == d)
     {
       counter = counter + 1
-      ind[i] = TRUE
+      ind[(i-1)] = TRUE
     }
     
     
@@ -185,7 +185,7 @@ aug_UBA = function(x0,dt,N)
     if(temp ==1)
     {
       counter = counter + 1
-      ind[i] = TRUE
+      ind[(i-1)] = TRUE
     }
     x[i, -d] = x[(i-1), -d] + sqrt(2*dt)*mat%*%v
     x[i , d] = 1 - sum(x[i, -d]) #Using the dirichlet constraint
@@ -196,6 +196,7 @@ aug_UBA = function(x0,dt,N)
     }
     
   } 
+  
   return(list(x , ind, counter))
 }
 
@@ -246,7 +247,7 @@ MLD = function(x0, dt, N)
 
 x0 = rep(1/d, d)
 dt = 1e-4
-N = 1e5
+N = 1e6
 
 out = UBA(x0 = x0, dt = dt, N = N)
 my_r = 1 - out[[3]]/N
@@ -256,21 +257,23 @@ try = aug_UBA(x0, dt = dt , N = N)
 c = try[[3]]
 r = 1 - c/N
 try1 = try[[1]]
-out = try1[try[[2]] ,]
+ag_out = try1[try[[2]] ,]
+
 out_MLD = MLD(x0, dt= dt,N=N)
 
-idx = 4
+idx = 5
+
 foo.x = seq(0,1, length.out = 1e3)
 plot(foo.x , dbeta(foo.x , shape1 = pars[idx],
                    shape2 = sum(pars) - pars[idx]),
      type ='l', ylab = ' ', xlab = 'x', 
+     ylim = c(0,16),
      main = paste('X_', idx,' dt= ', dt,' N= ',N))
-lines(density(out[,idx]), col = 'green')
+lines(density(ag_out[,idx]), col = 'green')
 lines(density(my_out[,idx]) , col = 'blue')
 lines(density(out_MLD[,idx]), col = 'red')
 legend('topright', 
        legend = c('Truth', 'AgUBA' , 'MYUBA' , 'MLD'), 
        col = c('black', 'green' , 'blue','red'),lty = 1 )
 print(paste('X_',idx,'MYUBA: ',
-             round(my_r ,4), ' AgUBA: ', round(r,4)))
-
+            round(my_r ,4), ' AgUBA: ', round(r,4)))
