@@ -5,9 +5,7 @@
 set.seed(123)
 
 d = 11
-nl = rep(10, d)
-#nl = c(.5, .50,rep(50, d-2))
-#nl = c(3,3)
+nl = c(10,10,20,30,40,20,20,20,10,30,30,50)
 al= rep(0.1, d) 
 pars = nl+al
 ##Dimesion 
@@ -58,7 +56,7 @@ dlogf = function(x)
   nl.sub <- nl[1:(d-1)]
   al.sub<- al[1:(d-1)]
   
-  grad.psi = (nl.sub + al.sub -1)/x.sub - (nl.sub + al.sub -1)/(1 -sum(x.sub))
+  grad.psi = (nl.sub + al.sub -1)/x.sub - (nl[d] + al[d] -1)/(1 -sum(x.sub))
   
   my.grad = (x.sub - u.sub)/lambda
   rtn = grad.psi - my.grad
@@ -120,7 +118,7 @@ aug_drift = function(x)
   nl.sub <- nl[1:(d-1)]
   al.sub<- al[1:(d-1)]
   
-  dlogf = (nl.sub + al.sub -1)/x.sub - (nl.sub + al.sub -1)/(1 -sum(x.sub))
+  dlogf = (nl.sub + al.sub -1)/x.sub - (nl[d] + al[d] -1)/(1 -sum(x.sub))
   
   rtn = ifelse( u.sub - x.sub == 0 , dlogf , sign(u.sub - x.sub)*Inf)
   return(rtn)
@@ -244,7 +242,7 @@ MLD = function(x0, dt, N)
 
 ####Set initial values 
 x0 = rep(1/d, d)
-dt = 1e-4
+dt = 1e-5
 N = 1e5
 ##Run MYUBA 
 out = UBA(x0 = x0, dt = dt, N = N)
@@ -266,7 +264,6 @@ for(idx in 1:11)
   plot(foo.x , dbeta(foo.x , shape1 = pars[idx],
                      shape2 = sum(pars) - pars[idx]),
        type ='l', ylab = ' ', xlab = 'x', 
-       ylim = c(0,16),
        main = paste('X_', idx,' dt= ', dt,' N= ',N))
   lines(density(ag_out[,idx]), col = 'green')
   lines(density(my_out[,idx]) , col = 'blue')
@@ -277,5 +274,4 @@ for(idx in 1:11)
   print(paste('X_',idx,'MYUBA: ',
               round(my_r ,4), ' AgUBA: ', round(r,4)))
 }
-
 
