@@ -6,13 +6,14 @@ set.seed(123)
 
 d = 11
 nl = rep(10, d)
+#nl = c(.5, .50,rep(50, d-2))
 #nl = c(3,3)
 al= rep(0.1, d) 
 pars = nl+al
 ##Dimesion 
 
 #lambda 
-lambda = 1e-8 
+lambda = 1e-6
 
 ##Calculate projection 
 projsplx = function(u)
@@ -165,6 +166,7 @@ C = function(x)
 }
 
 ###AugUBA
+###AugUBA
 aug_UBA = function(x0,dt,N)
 {
   x = matrix(0 ,nrow = N, ncol= d)
@@ -196,12 +198,8 @@ aug_UBA = function(x0,dt,N)
     }
     
   } 
-  
   return(list(x , ind, counter))
 }
-
-
-
 ###############################################
 ### MLD 
 ###################################################
@@ -244,36 +242,40 @@ MLD = function(x0, dt, N)
 }
 
 
-
+####Set initial values 
 x0 = rep(1/d, d)
 dt = 1e-4
-N = 1e6
-
+N = 1e5
+##Run MYUBA 
 out = UBA(x0 = x0, dt = dt, N = N)
 my_r = 1 - out[[3]]/N
 my_out = out[[1]][out[[2]] , ]
-
+##Run aug_UBA
 try = aug_UBA(x0, dt = dt , N = N) 
 c = try[[3]]
 r = 1 - c/N
 try1 = try[[1]]
 ag_out = try1[try[[2]] ,]
-
+##Run MLD
 out_MLD = MLD(x0, dt= dt,N=N)
 
-idx = 5
 
 foo.x = seq(0,1, length.out = 1e3)
-plot(foo.x , dbeta(foo.x , shape1 = pars[idx],
-                   shape2 = sum(pars) - pars[idx]),
-     type ='l', ylab = ' ', xlab = 'x', 
-     ylim = c(0,16),
-     main = paste('X_', idx,' dt= ', dt,' N= ',N))
-lines(density(ag_out[,idx]), col = 'green')
-lines(density(my_out[,idx]) , col = 'blue')
-lines(density(out_MLD[,idx]), col = 'red')
-legend('topright', 
-       legend = c('Truth', 'AgUBA' , 'MYUBA' , 'MLD'), 
-       col = c('black', 'green' , 'blue','red'),lty = 1 )
-print(paste('X_',idx,'MYUBA: ',
-            round(my_r ,4), ' AgUBA: ', round(r,4)))
+for(idx in 1:11)
+{
+  plot(foo.x , dbeta(foo.x , shape1 = pars[idx],
+                     shape2 = sum(pars) - pars[idx]),
+       type ='l', ylab = ' ', xlab = 'x', 
+       ylim = c(0,16),
+       main = paste('X_', idx,' dt= ', dt,' N= ',N))
+  lines(density(ag_out[,idx]), col = 'green')
+  lines(density(my_out[,idx]) , col = 'blue')
+  lines(density(out_MLD[,idx]), col = 'red')
+  legend('topright', 
+         legend = c('Truth', 'AgUBA' , 'MYUBA' , 'MLD'), 
+         col = c('black', 'green' , 'blue','red'),lty = 1 )
+  print(paste('X_',idx,'MYUBA: ',
+              round(my_r ,4), ' AgUBA: ', round(r,4)))
+}
+
+
