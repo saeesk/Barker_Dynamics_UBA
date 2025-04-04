@@ -95,7 +95,7 @@ aug_drift = function(x)
   nl.sub <- nl[1:(d-1)]
   al.sub<- al[1:(d-1)]
   
-  dlogf = (nl.sub + al.sub -1)/x.sub - (nl.sub + al.sub -1)/(1 -sum(x.sub))
+  dlogf = (nl.sub + al.sub -1)/x.sub - (nl[d]+ al[d] -1)/(1 -sum(x.sub))
   
   rtn = ifelse( u.sub - x.sub == 0 , dlogf , sign(u.sub - x.sub)*Inf)
   return(rtn)
