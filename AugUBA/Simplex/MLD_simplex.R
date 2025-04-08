@@ -1,3 +1,4 @@
+##This coe implements MLD for simplex d dimensions
 ################################
 ###Mirrored Langevin Algorithm 
 #################################
